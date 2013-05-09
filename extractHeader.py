@@ -51,7 +51,8 @@ selectorsString =  ', '.join(anchorSelectorsList)
 
 print "selectorsString=", selectorsString
 
-result, resources = ghost.evaluate("""
+def injectJqueryIfNeededAndThenRun(jquerycode):
+    return """
 // Jquery safe load from http://css-tricks.com/snippets/jquery/load-jquery-only-if-not-present/
 var jQueryScriptOutputted = false;
 function initJQuery() {
@@ -81,7 +82,19 @@ function initJQuery() {
             // do anything that needs to be done on document.ready
             // don't really need this dom ready thing if used in footer
 
-            $(document).ready(function() {
+            $(document).ready(function() {""" + \
+                jquerycode + \
+            """});
+
+
+        });
+    }
+            
+}
+initJQuery();
+"""
+
+jquerycode =  """ 
                 'use strict';
                 var logoBlock =  $('"""+ selectorsString +"""').closest(':not(:only-child)').sort(function (a, b) {
                      return $(a).width() <= $(b).width() ? 1 : -1;   // <= Is important because if width is the same, keep the first as first
@@ -118,18 +131,19 @@ function initJQuery() {
                 }
                 unloadScrollBars();
                 alert("done");
-            });
+"""
+
+javascriptCode = injectJqueryIfNeededAndThenRun(jquerycode)
 
 
-        });
-    }
-            
-}
-initJQuery();
-    
-""")
+result, resources = ghost.evaluate(javascriptCode)
 
 result, resources = ghost.wait_for_alert()
+
+
+print "Runned code :"
+print javascriptCode
+
 
 
 #jQuery(function($) {
